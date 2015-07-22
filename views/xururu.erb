@@ -9,5 +9,8 @@
             <input name="text" id="text" type="text" size=40 />
             <input type="submit" value="go">
         </form>
+        <% @ret.each do |x| %>
+            <p><%= x[:nome] %></p>
+        <% end if @ret %>
     </body>
 </html>

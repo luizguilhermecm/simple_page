@@ -122,20 +122,27 @@ class SimplePage < Sinatra::Base
   get '/insert' do
       text = params[:text]
 
-      @@conn.exec_params(' INSERT INTO teste(id, nome) VALUES($1, $2) ',
-                       [432, text.to_s])
+      if text[0..2] == 'snk'
+          text = text.gsub(/snk/, '')
+          @@conn.exec_params(' INSERT INTO teste(nome) VALUES($1) ', [text.to_s])
 
-      ret = @@conn.exec_params(' SELECT * FROM teste WHERE id = $1 ',
-                       [432])
+          erb :xururu
+      elsif text[0..2] == 'cat'
+          ret = @@conn.exec('SELECT nome FROM teste')
 
-      puts "++++++++++++++++++++++++++++++++++++++++"
-      puts text
-      puts "++++++++++++++++++++++++++++++++++++++++"
-      ret.each do |x|
-          puts x
+          puts "++++++++++++++++++++++++++++++++++++++++"
+          @ret = []
+          ret.each do |x|
+              @ret << {
+                :nome => x["nome"],
+              }
+              puts x
+          end
+          puts "++++++++++++++++++++++++++++++++++++++++"
+          erb :xururu
+      else
+          erb :index
       end
-      puts "++++++++++++++++++++++++++++++++++++++++"
-     erb :index
   end
 
   run! if app_file == $0
