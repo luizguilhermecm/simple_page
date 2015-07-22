@@ -1,0 +1,8 @@
+gem install shotgun 
+gem install pg (if mac, then: sudo ARCHFLAGS="-arch x86_64" gem install pg)
+
+# inicia o servidor no modo desenvolvimento
+shotgun config.ru -p 4567 -o 0.0.0.0
+
+# inicia o servidor modo producao
+ruby myapp.rb
