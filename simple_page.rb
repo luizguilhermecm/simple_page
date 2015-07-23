@@ -2,104 +2,20 @@
 # encoding: UTF-8
 
 require 'pg'
+require 'sinatra'
 
 require './tables'
 require './passwds'
-
-def db_exists
-    db_name = settings.dbname
-    db_owner = settings.user
-    puts "checking if database '#{db_name}' exists"
-    c = PGconn.connect(:user=>DB_ADMIN_USER, :dbname=>DB_ADMIN_DB, :password => DB_ADMIN_PASSWD)
-    r = c.exec("SELECT COUNT(*) FROM pg_database WHERE datname='#{db_name}'")
-    if r.entries[0]['count'].to_i == 1
-        puts "database '#{db_name}' exists"
-        puts "dropping database '#{db_name}' ... "
-        drop_db_sql = ""
-        drop_db_sql = " DROP DATABASE #{db_name}"
-        if db_name == "xururub"
-            r = c.exec(drop_db_sql)
-        else
-            puts "Error: Cowardly refusing to `#{drop_db_sql}`"
-        end
-    else
-        puts "database '#{db_name}' do not exists"
-        puts "creating database '#{db_name}' ... "
-        create_db_sql = " -- SQL \n"
-        create_db_sql += " CREATE DATABASE #{db_name} \n"
-        create_db_sql += " WITH OWNER = #{db_owner} \n"
-        create_db_sql += "      ENCODING = 'UTF8' \n"
-        create_db_sql += "      TABLESPACE = pg_default \n"
-        create_db_sql += "      LC_COLLATE = 'en_US.UTF-8' \n"
-        create_db_sql += "      LC_CTYPE = 'en_US.UTF-8' \n"
-        create_db_sql += "      CONNECTION LIMIT = -1; \n"
-        create_db_sql += " -- SQL \n"
-        puts create_db_sql
-        begin
-            r = c.exec(create_db_sql)
-            puts "database '#{db_name}' created ... "
-        rescue Exception => e
-            puts "[ FAIL ] an error occurred while database '#{db_name}' was being created "
-            puts e
-        end
-        puts "checking if database '#{db_name}' was successfully created ..."
-        c = PGconn.connect(:user=>DB_ADMIN_USER, :dbname=>DB_ADMIN_DB, :password => DB_ADMIN_PASSWD)
-        r = c.exec("SELECT COUNT(*) FROM pg_database WHERE datname='#{db_name}'")
-        if r.entries[0]['count'].to_i == 1
-            puts "[ OK ] database '#{db_name}' was successfully created ..."
-        else
-            puts "[ FAIL ] something happened, database '#{db_name}' was not created ..."
-            puts "[ INFO ] run to the hills"
-            puts "[ INFO ] shutting down"
-
-            return false
-        end
-    end
-    return true
-end
-def get_check_table_sql(tb_name)
-    check_table_sql = ""
-    check_table_sql += " \n -- SQL \n"
-    check_table_sql += " SELECT EXISTS ( \n"
-    check_table_sql += "   SELECT 1 \n"
-    check_table_sql += "   FROM   information_schema.tables \n"
-    check_table_sql += "   WHERE 1 = 1 \n"
-    check_table_sql += "   AND table_name = '#{tb_name}' \n"
-    check_table_sql += " ); \n"
-    check_table_sql += " -- SQL \n"
-
-    return check_table_sql
-end
-
-def checking_tables(conn, tb_name, tb_name_sql)
-    query = get_check_table_sql(tb_name)
-    puts "checking if table '#{tb_name}' do exist "
-    r = conn.exec(query)
-    if r.entries[0]['exists'].to_s == "t"
-        puts "table '#{tb_name}' do exist "
-    else
-        puts "table '#{tb_name}' do not exists "
-        puts "creating table '#{tb_name}' ... "
-        r = conn.exec(tb_name_sql)
-    end
-end
 
 class SimplePage < Sinatra::Base
   set :host, DB_HOST
   set :dbname, DB_NAME
   set :user, DB_SYS_USER
   set :password, DB_SYS_PASSWD
-  #set :bind, '0.0.0.0'
+  set :bind, '0.0.0.0:4569'
   set :environment, :production
 
-  if db_exists
-      @@conn = PG.connect(:host => settings.host, :dbname => settings.dbname, :user => settings.user, :password => settings.password)
-      puts "start to checking tables"
-      puts "table : #{TB_TESTE_NAME}"
-      checking_tables(@@conn, TB_TESTE_NAME, TB_TESTE_SQL)
-  else
-      @@conn = nil
-  end
+  @@conn = PG.connect(:host => settings.host, :dbname => settings.dbname, :user => settings.user, :password => settings.password)
 
   configure :production, :test do
     enable :logging
@@ -112,14 +28,54 @@ class SimplePage < Sinatra::Base
   end
 
   get '/' do
-     if @@conn == nil
          erb :index
-     else
-         erb :xururu
-     end
   end
 
   get '/insert' do
+      text = params[:text]
+
+      if text[0..2] == 'cat'
+          ret = @@conn.exec('SELECT nome FROM teste')
+
+          puts "++++++++++++++++++++++++++++++++++++++++"
+          @ret = []
+          ret.each do |x|
+              @ret << {
+                :nome => x["nome"],
+              }
+              puts x
+          end
+          puts "++++++++++++++++++++++++++++++++++++++++"
+          erb :xururu
+      else
+          @@conn.exec_params(' INSERT INTO teste(nome) VALUES($1) ', [text.to_s])
+          erb :xururu
+      end
+  end
+
+  get "/passwd" do
+      @@pass = params[:pass]
+      puts "**************************************************"
+      puts "* login with pass:    " + @@pass
+      puts "**************************************************"
+      if @@pass == "xxx"
+          erb :xururu
+      else
+          erb :index
+      end
+  end
+
+  get "/renderizar_admin/" do
+      puts "**************************************************"
+      puts "**************************************************"
+      puts "**************************************************"
+      puts "**************************************************"
+      puts "**************************************************"
+      puts "**************************************************"
+      puts "**************************************************"
+      erb :xururu
+  end
+  get '/insertX' do
       text = params[:text]
 
       if text[0..2] == 'snk'

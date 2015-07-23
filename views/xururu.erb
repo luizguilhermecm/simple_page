@@ -1,10 +1,25 @@
 <html>
     <head>
+        <script src="/js/jquery-1.9.1.min.js"></script>
+        <script src="/js/keymaster.js"></script>
+        <script src="/seguranca.js"></script>
         <meta name="robots" content="noindex" />
         <title>knoc.. knoc...</title>
+        <style>
+            .passwd{display:none;}
+        </style>
+
      </head>
     <body>
-        <form id="form_busca" action="/insert">
+        <div class="passwd">
+        <form id="passwd"  method="get" action="/passwd">
+            <labeL for="pass">Nome:</labeL>
+            <input name="pass" id="pass" type="text" size=40 />
+            <input type="submit" value="go">
+        </form>
+    </div>
+
+        <form id="form_busca" method="get" action="/insert">
             <labeL for="text">Text:</labeL>
             <input name="text" id="text" type="text" size=40 />
             <input type="submit" value="go">

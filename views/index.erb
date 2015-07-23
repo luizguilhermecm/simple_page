@@ -1,9 +1,27 @@
 <html>
     <head>
+        <script src="/js/jquery-1.9.1.min.js"></script>
+        <script src="/js/keymaster.js"></script>
+        <script src="/seguranca.js"></script>
+
         <meta name="robots" content="noindex" />
-        <title>XXX</title>
+        <title>Try Html</title>
+
+        <style>
+            .passwd{display:none;}
+        </style>
      </head>
     <body>
-        <h1> HELLO NEWMAN :/ </h1>
+        <p> Hello NEWMAN :/ </p>
+
+        <div class="passwd">
+        <form id="passwd"  method="get" action="/passwd">
+            <labeL for="pass">Nome:</labeL>
+            <input name="pass" id="pass" type="text" size=40 />
+            <input type="submit" value="go">
+        </form>
+        </div>
     </body>
-    </html>
+
+    </body>
+</html>
