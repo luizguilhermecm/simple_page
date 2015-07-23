@@ -6,7 +6,7 @@ require 'pg'
 require 'logger'
 
 require './tables'
-require './passwds'
+require './passwdss'
 
 class SimplePage < Sinatra::Base
   set :host, DB_HOST
@@ -68,6 +68,9 @@ class SimplePage < Sinatra::Base
           end
           puts "++++++++++++++++++++++++++++++++++++++++"
           erb :xururu
+      elsif text[0..3] == "quit"
+
+          `./stop.sh`
       else
           @@conn.exec_params(' INSERT INTO teste(nome) VALUES($1) ', [text.to_s])
           erb :xururu
