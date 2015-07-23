@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
 
-require 'pg'
 require 'sinatra'
+require 'pg'
+require 'logger'
 
 require './tables'
 require './passwds'
@@ -12,15 +13,35 @@ class SimplePage < Sinatra::Base
   set :dbname, DB_NAME
   set :user, DB_SYS_USER
   set :password, DB_SYS_PASSWD
-  set :bind, '0.0.0.0:4569'
+  set :bind, '0.0.0.0'
   set :environment, :production
 
   @@conn = PG.connect(:host => settings.host, :dbname => settings.dbname, :user => settings.user, :password => settings.password)
 
-  configure :production, :test do
-    enable :logging
+#  configure :production, :test do
+#    use Rack::Session::Pool
+#    set :erb, :trim => '-'
+#    enable :logging
+#  end
+  configure :production do
     use Rack::Session::Pool
     set :erb, :trim => '-'
+    set :clean_trace, true
+
+    Dir.mkdir('logs') unless File.exist?('logs')
+
+    $logger = Logger.new('logs/common.log','weekly')
+    $logger.level = Logger::INFO
+
+    # Spit stdout and stderr to a file during production
+    # in case something goes wrong
+    $stdout.reopen("logs/output.log", "w")
+    $stdout.sync = true
+    $stderr.reopen($stdout)
+  end
+
+  configure :development do
+    $logger = Logger.new(STDOUT)
   end
 
   not_found do
